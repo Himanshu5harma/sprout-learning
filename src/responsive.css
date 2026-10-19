@@ -1,0 +1,975 @@
+/* Readable type and fluid layouts across Sprout's existing screens. */
+:root {
+  font-size: 16px;
+  --font-body: 1rem;
+  --font-secondary: 0.875rem;
+  --font-meta: 0.8125rem;
+  --font-label: 0.75rem;
+  --code-font-size: 15px;
+  --sidebar: 248px;
+  --content-width: 2000px;
+  --page-gutter: clamp(24px, 2.6vw, 56px);
+  --layout-gap: clamp(22px, 1.8vw, 36px);
+  --lesson-width: 1400px;
+}
+
+body {
+  line-height: 1.6;
+}
+.main-shell {
+  min-width: 0;
+}
+main {
+  width: 100%;
+  max-width: var(--content-width);
+  padding: 36px var(--page-gutter) 28px;
+}
+.app-shell h1 {
+  font-size: clamp(1.875rem, 2.2vw, 2.75rem);
+  line-height: 1.3;
+}
+.app-shell h2 {
+  font-size: clamp(1.375rem, 1.5vw, 1.875rem);
+  line-height: 1.4;
+}
+.app-shell h3 {
+  line-height: 1.5;
+}
+.app-shell p {
+  font-size: var(--font-body);
+}
+.app-shell :is(.eyebrow, .hero-label, .challenge-label, .course-category) {
+  font-size: var(--font-label);
+  line-height: 1.7;
+  letter-spacing: 0.1em;
+  color: #5c6f52;
+}
+.app-shell :is(.page-heading, .course-detail-header, .interior-heading) p {
+  font-size: var(--font-body);
+  line-height: 1.75;
+  color: #57694e;
+  max-width: 65ch;
+}
+.app-shell :is(.page-heading, .section-heading, .lab-heading) {
+  flex-wrap: wrap;
+}
+.page-heading {
+  margin-bottom: 30px;
+}
+.interior-heading {
+  max-width: none;
+}
+.topbar {
+  padding-inline: var(--page-gutter);
+}
+.app-shell :is(.breadcrumb, .search-trigger, .heading-note) {
+  font-size: var(--font-secondary);
+  color: #5c6f52;
+}
+.search-trigger kbd {
+  font-size: 12px;
+}
+.header-actions {
+  gap: 20px;
+}
+.profile-avatar {
+  width: 40px;
+  height: 40px;
+  font-size: 16px;
+}
+
+.app-shell .sidebar {
+  width: var(--sidebar);
+  padding-inline: 16px;
+}
+.app-shell .sidebar .nav-item {
+  font-size: 15px;
+  min-height: 46px;
+  line-height: 1.45;
+  color: #53634d;
+}
+.app-shell .sidebar .nav-item.active {
+  color: #315b3e;
+}
+.sidebar .workspace-label {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  margin-left: 12px;
+}
+.sidebar .nav-label {
+  font-size: 11px;
+  color: #64745b;
+}
+.sidebar .nav-new {
+  font-size: 9px;
+  letter-spacing: 0.03em;
+}
+.sidebar .nav-count {
+  font-size: 12px;
+}
+.app-shell .sidebar-note h4 {
+  font-size: 14px;
+}
+.app-shell .sidebar-note p {
+  font-size: 13px;
+  line-height: 1.65;
+  color: #5c6f52;
+}
+.app-shell .sidebar-note button {
+  font-size: 13px;
+  min-height: 38px;
+}
+.sidebar .help-button {
+  font-size: 14px;
+  min-height: 40px;
+  color: #53634d;
+}
+.sidebar .sidebar-footer {
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: #64745b;
+}
+
+.app-shell
+  :is(.primary-button, .outline-button, .run-button, .filter-tabs button) {
+  font-size: var(--font-secondary);
+  min-height: 44px;
+  line-height: 1.5;
+  padding: 10px 16px;
+}
+.app-shell :is(.text-button, .back-button, .lesson-start, .inline-link) {
+  font-size: var(--font-secondary);
+  line-height: 1.6;
+}
+.app-shell .icon-button {
+  min-width: 36px;
+  min-height: 36px;
+}
+.app-shell .filter-tabs {
+  gap: 10px;
+}
+.app-shell .tiny-js {
+  font-size: 11px;
+}
+.app-shell :is(.course-level, .tag) {
+  font-size: var(--font-label);
+}
+.app-shell .course-card .course-level,
+.app-shell .tag {
+  color: #4b603f;
+}
+.app-shell
+  :is(.project-tags, .lesson-row-title > span, .detail-count small, .autosave) {
+  color: #5c6f52;
+}
+
+.dashboard-top,
+.dashboard-bottom {
+  grid-template-columns: minmax(0, 1fr) clamp(280px, 20vw, 360px);
+  gap: var(--layout-gap);
+}
+.welcome-card {
+  min-height: 340px;
+}
+.welcome-content {
+  padding: clamp(24px, 2.3vw, 40px);
+  max-width: 66%;
+}
+.app-shell .welcome-card h2 {
+  font-size: clamp(1.75rem, 2vw, 2.4rem);
+  line-height: 1.35;
+}
+.app-shell .welcome-card p {
+  font-size: var(--font-body);
+  line-height: 1.75;
+  color: #536b47;
+}
+.app-shell .hero-caption {
+  font-size: var(--font-meta);
+  color: #5b704c;
+}
+.hero-art {
+  width: 37%;
+  right: 0;
+  opacity: 1;
+}
+.app-shell .daily-goal {
+  padding: 24px 20px;
+}
+.app-shell .section-card-header h3 {
+  font-size: var(--font-body);
+}
+.app-shell .daily-goal > p {
+  font-size: var(--font-secondary);
+  color: #5c6f52;
+}
+.goal-ring {
+  width: 140px;
+  height: 140px;
+}
+.goal-ring > div {
+  width: 120px;
+  height: 120px;
+}
+.app-shell .goal-ring strong {
+  font-size: 36px;
+}
+.app-shell .goal-ring strong span {
+  font-size: 20px;
+  color: #617053;
+}
+.app-shell .goal-ring small {
+  font-size: 12px;
+  color: #5c6f52;
+}
+.week-dots {
+  max-width: 260px;
+}
+.app-shell .week-dots span {
+  width: 26px;
+  height: 26px;
+  font-size: 12px;
+  color: #596b4f;
+}
+.app-shell .week-dots span.done {
+  color: white;
+  background: #526c40;
+  border-color: #526c40;
+}
+.stats-grid {
+  gap: 18px;
+  margin-block: 24px 36px;
+}
+.stat-card {
+  padding: 22px 18px;
+  min-height: 106px;
+  gap: 14px;
+}
+.app-shell .stat-value {
+  font-size: clamp(1.5rem, 1.65vw, 2rem);
+}
+.app-shell .stat-value > span {
+  font-size: var(--font-secondary);
+}
+.app-shell .stat-value.stat-text {
+  font-size: 1.125rem;
+  line-height: 1.5;
+}
+.app-shell .stat-label {
+  font-size: var(--font-meta);
+  line-height: 1.5;
+  color: #586a4f;
+}
+.app-shell .stat-icon {
+  width: 42px;
+  height: 42px;
+}
+.app-shell .section-heading h2 {
+  font-size: 1.5rem;
+}
+.app-shell .section-heading p {
+  font-size: var(--font-secondary);
+  color: #5c6f52;
+}
+
+.courses-grid,
+.all-courses-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+}
+.app-shell .course-card {
+  padding: 24px;
+  min-height: 320px;
+}
+.app-shell .course-card h3 {
+  font-size: 1.25rem;
+  line-height: 1.45;
+  max-width: none;
+}
+.app-shell .course-card > p {
+  font-size: var(--font-body);
+  color: #5c6f52;
+  line-height: 1.65;
+}
+.app-shell .course-meta {
+  font-size: var(--font-meta);
+  gap: 10px 16px;
+  color: #5c6f52;
+}
+.app-shell .course-meta svg {
+  width: 15px;
+  height: 15px;
+}
+.app-shell .course-card-bottom > div > span {
+  font-size: var(--font-label);
+  color: #5c6f52;
+  line-height: 1.6;
+}
+.course-card-top {
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.practice-banner {
+  padding: 22px;
+  flex-wrap: wrap;
+}
+.app-shell .practice-banner strong {
+  font-size: var(--font-body);
+  line-height: 1.6;
+}
+.app-shell .practice-banner small {
+  font-size: var(--font-secondary);
+  line-height: 1.7;
+}
+.app-shell .practice-banner-action {
+  font-size: var(--font-secondary);
+}
+.challenge-card {
+  padding: 26px;
+}
+.app-shell .challenge-card h3 {
+  font-size: 1.375rem;
+}
+.app-shell .challenge-card > p {
+  font-size: var(--font-body);
+  line-height: 1.75;
+  color: #576b4c;
+}
+.app-shell .challenge-meta {
+  font-size: var(--font-meta);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.app-shell .small-encouragement p {
+  font-size: var(--font-meta);
+  line-height: 1.8;
+  color: #5c6f52;
+}
+.page-footer {
+  flex-wrap: wrap;
+  gap: 14px;
+}
+.app-shell .page-footer,
+.app-shell .page-footer > span:last-child {
+  font-size: var(--font-label);
+  color: #5c6f52;
+  letter-spacing: 0.04em;
+}
+
+.path-roadmap {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 26px;
+}
+.path-roadmap > button {
+  min-width: 0;
+  align-items: flex-start;
+}
+.app-shell .path-roadmap > button > span:nth-child(2) {
+  font-size: var(--font-meta);
+}
+.app-shell .path-roadmap strong {
+  font-size: var(--font-secondary);
+  line-height: 1.6;
+}
+.app-shell .roadmap-number {
+  width: 38px;
+  height: 38px;
+  font-size: 16px;
+}
+.app-shell .soft-note p {
+  font-size: var(--font-secondary);
+  line-height: 1.8;
+}
+.course-detail-header {
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.app-shell .detail-count small {
+  font-size: var(--font-meta);
+}
+.app-shell .lesson-row {
+  gap: 20px;
+  padding: 24px;
+}
+.app-shell .lesson-row-title {
+  min-width: 0;
+}
+.app-shell .lesson-row-title h3 {
+  font-size: 1.0625rem;
+  line-height: 1.5;
+}
+.app-shell .lesson-row-title > span {
+  font-size: var(--font-meta);
+  max-width: none;
+  flex-wrap: wrap;
+  line-height: 1.7;
+}
+.app-shell .lesson-number {
+  width: 42px;
+  height: 42px;
+  font-size: 15px;
+}
+.projects-grid,
+.resources-grid {
+  gap: 26px;
+}
+.app-shell .project-card-info,
+.app-shell .resource-card {
+  padding: 28px;
+}
+.app-shell :is(.project-card, .resource-card) h3 {
+  font-size: 1.375rem;
+}
+.app-shell :is(.project-card, .resource-card) p {
+  font-size: var(--font-body);
+  color: #576b4c;
+}
+.app-shell .project-tags {
+  font-size: var(--font-meta);
+  flex-wrap: wrap;
+  row-gap: 10px;
+}
+.app-shell .project-card-footer {
+  font-size: var(--font-secondary);
+  flex-wrap: wrap;
+  gap: 12px;
+  line-height: 1.6;
+}
+.app-shell :is(.empty-state, .growth-title) p {
+  font-size: var(--font-body);
+  max-width: 60ch;
+}
+.app-shell .saved-lesson h3 {
+  font-size: 1.125rem;
+}
+.app-shell .saved-lesson .muted {
+  font-size: var(--font-secondary);
+}
+.app-shell .progress-course-row strong {
+  font-size: var(--font-body);
+  width: 240px;
+}
+.app-shell .progress-course-row > span:nth-last-child(2) {
+  font-size: var(--font-secondary);
+}
+.app-shell .autosave {
+  font-size: var(--font-meta);
+}
+
+.dialog {
+  width: 580px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100dvh - 32px);
+}
+.lesson-dialog {
+  width: min(var(--lesson-width), calc(100vw - 48px));
+}
+.project-dialog {
+  width: 760px;
+}
+.challenge-dialog {
+  width: 1200px;
+}
+.search-dialog {
+  width: 800px;
+}
+.app-shell .modal-heading h2 {
+  font-size: 1.75rem;
+}
+.app-shell :is(.simple-modal-content, .help-content) p {
+  font-size: var(--font-body);
+  line-height: 1.8;
+}
+.app-shell :is(.simple-modal-content, .help-content) h3 {
+  font-size: 1.125rem;
+}
+.app-shell
+  :is(
+    .field-label,
+    .goal-options span,
+    .project-checklist label,
+    .project-lab-brief label
+  ) {
+  font-size: var(--font-body);
+  line-height: 1.75;
+}
+.app-shell .goal-options strong {
+  font-size: 1rem;
+}
+.app-shell .text-input,
+.app-shell .search-input-row input {
+  font-size: 1rem;
+}
+.app-shell .search-result strong {
+  font-size: var(--font-body);
+}
+.app-shell .search-result small,
+.app-shell .search-footer {
+  font-size: var(--font-meta);
+}
+.teacher-body {
+  padding-inline: clamp(22px, 3vw, 44px);
+}
+.app-shell .teacher-body > h1 {
+  font-size: clamp(1.75rem, 2.1vw, 2.5rem);
+}
+.app-shell .teacher-body .lesson-tabs > button {
+  font-size: var(--font-secondary);
+  padding-block: 14px;
+}
+.teacher-read {
+  gap: 36px;
+}
+.app-shell .teacher-read .lesson-plain > p {
+  font-size: 1.0625rem;
+  line-height: 1.85;
+}
+.app-shell
+  :is(
+    .lesson-goal,
+    .expected-result,
+    .lesson-deeper,
+    .lesson-recap,
+    .project-connection,
+    .common-mistake
+  )
+  p,
+.app-shell :is(.lesson-deeper, .lesson-recap) li,
+.app-shell
+  :is(
+    .project-task-detail,
+    .completion-evidence,
+    .learning-error,
+    .project-milestones
+  )
+  :is(p, li) {
+  font-size: var(--font-body);
+  line-height: 1.8;
+}
+.app-shell
+  :is(
+    .lesson-goal,
+    .expected-result,
+    .lesson-plain,
+    .completion-evidence,
+    .project-milestones
+  )
+  :is(h2, h3) {
+  font-size: 1.0625rem;
+}
+.app-shell
+  :is(
+    .lesson-prerequisites,
+    .lesson-deeper,
+    .lesson-code-help,
+    .project-connection,
+    .optional-warmups,
+    .optional-reflection
+  )
+  > summary {
+  font-size: var(--font-secondary);
+  padding-block: 14px;
+}
+.app-shell
+  :is(
+    .prerequisite-link,
+    .learning-hint,
+    .line-help,
+    .assistance-note,
+    .check-scope,
+    .draft-note,
+    .check-actions > p,
+    .self-report-label,
+    .stale-result,
+    .evidence-badge
+  ) {
+  font-size: var(--font-secondary);
+  line-height: 1.75;
+}
+.app-shell .line-explanation p {
+  font-size: var(--font-secondary);
+  line-height: 1.75;
+}
+.app-shell .line-explanation > span {
+  font-size: var(--font-label);
+}
+.app-shell .practice-stages > button {
+  font-size: var(--font-meta);
+  min-height: 44px;
+}
+.app-shell .task-brief dt {
+  font-size: var(--font-secondary);
+}
+.app-shell .task-brief dd {
+  font-size: var(--font-body);
+  line-height: 1.8;
+}
+.app-shell .task-heading h2,
+.app-shell .prediction-task h2 {
+  font-size: 1.5rem;
+}
+.app-shell :is(.task-expected, .expected-result pre, .result-comparison pre) {
+  font-size: var(--code-font-size);
+}
+.app-shell .teacher-quiz .quiz-option {
+  font-size: var(--font-body);
+  line-height: 1.8;
+}
+.app-shell .teacher-quiz h2 {
+  font-size: 1.5rem;
+}
+.app-shell .teacher-quiz .quiz-feedback :is(p, strong) {
+  font-size: var(--font-body);
+}
+.quiz {
+  max-width: 850px;
+}
+.app-shell
+  :is(.learning-error summary, .behaviour-result, .behaviour-results p) {
+  font-size: var(--font-secondary);
+}
+.app-shell :is(.highlighted-example, .lab-wrapper) .editor-toolbar {
+  font-size: var(--font-meta);
+  flex-wrap: wrap;
+  min-height: 54px;
+  height: auto;
+  padding-block: 8px;
+}
+.app-shell .highlighted-example .editor-toolbar > span:last-child {
+  font-size: var(--font-label);
+}
+.app-shell .lab-wrapper .editor-footer {
+  font-size: var(--font-label);
+  padding-block: 12px;
+}
+.app-shell .lab-wrapper .output-toolbar {
+  font-size: var(--font-secondary);
+}
+.app-shell
+  .lab-wrapper
+  :is(.console-output pre, .output-empty p, .console-output > p) {
+  font-size: var(--font-body);
+}
+.app-shell .lab-wrapper .output-empty h4 {
+  font-size: 1.0625rem;
+}
+.app-shell :is(.learning-error pre, .preview-console pre) {
+  font-size: var(--code-font-size);
+}
+.app-shell .toast {
+  font-size: var(--font-secondary);
+}
+
+@media (min-width: 1800px) {
+  :root {
+    font-size: 17px;
+    --sidebar: 272px;
+    --code-font-size: 16px;
+    --lesson-width: 1520px;
+  }
+  .projects-grid,
+  .resources-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (min-width: 2200px) {
+  :root {
+    font-size: 18px;
+    --content-width: 2200px;
+    --lesson-width: 1680px;
+  }
+  .all-courses-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+@media (max-width: 1399px) {
+  .dashboard-bottom {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .dashboard-aside {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 24px;
+    align-items: center;
+  }
+  .all-courses-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 1100px) {
+  :root {
+    --sidebar: 232px;
+    --page-gutter: 24px;
+  }
+  .dashboard-top {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .courses-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .app-shell .daily-goal {
+    display: grid;
+    grid-template-columns: 140px minmax(0, 1fr);
+    grid-template-rows: auto auto auto;
+    gap: 8px 24px;
+  }
+  .daily-goal .section-card-header {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .daily-goal .goal-ring {
+    grid-column: 1;
+    grid-row: 1 / 4;
+    margin: 0;
+  }
+  .daily-goal > p {
+    grid-column: 2;
+    grid-row: 2;
+    text-align: left;
+  }
+  .daily-goal .week-dots {
+    grid-column: 2;
+    grid-row: 3;
+    margin: 0;
+  }
+  .path-roadmap {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .app-shell .path-roadmap > button > svg {
+    visibility: visible;
+  }
+  .app-shell .path-roadmap > button:nth-child(2n) > svg {
+    visibility: hidden;
+  }
+  .teacher-read {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .code-lab,
+  .challenge-dialog .code-lab {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 800px) {
+  :root {
+    --sidebar: 0px;
+    --page-gutter: 22px;
+  }
+  .app-shell .sidebar {
+    width: 256px;
+  }
+  .main-shell {
+    margin-left: 0;
+  }
+  .topbar {
+    height: 72px;
+  }
+  .header-actions {
+    gap: 12px;
+  }
+  .app-shell .search-trigger kbd {
+    display: none;
+  }
+  .lesson-dialog {
+    width: calc(100vw - 24px);
+  }
+  .app-shell .lesson-row {
+    flex-wrap: wrap;
+  }
+  .lesson-start {
+    margin-left: auto;
+  }
+  .projects-grid,
+  .resources-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .app-shell .progress-course-row {
+    flex-wrap: wrap;
+  }
+  .app-shell .progress-course-row strong {
+    width: auto;
+    flex: 1;
+  }
+  .progress-course-bar {
+    flex-basis: 100%;
+    order: 5;
+  }
+}
+@media (max-width: 600px) {
+  main {
+    padding-top: 28px;
+  }
+  .app-shell .eyebrow {
+    letter-spacing: 0.06em;
+  }
+  .welcome-content {
+    max-width: 100%;
+    padding: 26px;
+  }
+  .hero-art {
+    display: none;
+  }
+  .welcome-card {
+    min-height: 0;
+  }
+  .welcome-card h2 {
+    max-width: 22ch;
+  }
+  .courses-grid,
+  .all-courses-grid,
+  .dashboard-aside {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .app-shell .course-card {
+    min-height: 300px;
+  }
+  .stats-grid {
+    gap: 12px;
+  }
+  .stat-card {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 18px;
+    gap: 12px;
+  }
+  .app-shell .stat-value {
+    font-size: 1.625rem;
+  }
+  .app-shell .daily-goal {
+    grid-template-columns: 108px minmax(0, 1fr);
+    padding: 22px 18px;
+    gap: 8px 14px;
+  }
+  .goal-ring {
+    width: 108px;
+    height: 108px;
+  }
+  .goal-ring > div {
+    width: 92px;
+    height: 92px;
+  }
+  .app-shell .goal-ring strong {
+    font-size: 29px;
+  }
+  .app-shell .goal-ring strong span {
+    font-size: 17px;
+  }
+  .app-shell .goal-ring small {
+    font-size: 11px;
+  }
+  .app-shell .week-dots span {
+    width: 22px;
+    height: 22px;
+    font-size: 11px;
+  }
+  .week-dots {
+    gap: 3px;
+  }
+  .path-roadmap {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 24px;
+    gap: 24px;
+  }
+  .app-shell .path-roadmap > button > svg {
+    display: none;
+  }
+  .course-detail-header {
+    padding: 24px;
+  }
+  .app-shell .lesson-row {
+    padding: 20px 16px;
+    gap: 12px;
+  }
+  .app-shell .lesson-row-title {
+    flex: 1;
+  }
+  .lesson-row > .icon-button {
+    margin-left: 0;
+  }
+  .lesson-start {
+    width: 100%;
+    margin-top: 4px;
+  }
+  .app-shell .page-footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .app-shell .lab-heading {
+    gap: 16px;
+  }
+  .app-shell .lab-wrapper .run-button {
+    padding: 9px 12px;
+  }
+  .teacher-body {
+    padding-inline: 20px;
+  }
+  .app-shell .teacher-body > h1 {
+    font-size: 1.75rem;
+  }
+  .teacher-body .lesson-tabs {
+    gap: 15px;
+  }
+  .app-shell .teacher-body .lesson-tabs > button {
+    gap: 5px;
+    font-size: 13px;
+  }
+  .task-brief > div {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .check-actions > p {
+    min-width: 100%;
+  }
+  .app-shell .project-card-info,
+  .app-shell .resource-card {
+    padding: 24px;
+  }
+}
+@media (max-height: 900px) {
+  .sidebar .note-plant {
+    display: none;
+  }
+  .sidebar .workspace-label {
+    margin-bottom: 20px;
+  }
+  .sidebar .nav-divider {
+    margin-block: 14px 12px;
+  }
+  .sidebar .primary-nav {
+    gap: 4px;
+  }
+  .app-shell .sidebar .nav-item {
+    min-height: 44px;
+  }
+  .sidebar-bottom {
+    padding-top: 16px;
+  }
+  .sidebar-note {
+    padding-block: 12px;
+    margin-bottom: 10px;
+  }
+  .sidebar-note h4 {
+    margin-top: 0;
+  }
+  .sidebar .sidebar-footer {
+    margin-top: 10px;
+  }
+}
+@media (max-width: 400px) {
+  .app-shell .daily-goal {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .daily-goal .section-card-header {
+    width: 100%;
+  }
+  .daily-goal > p {
+    text-align: center;
+  }
+  .daily-goal .week-dots {
+    width: 100%;
+    max-width: 260px;
+  }
+}
