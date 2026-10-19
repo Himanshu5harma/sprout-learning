@@ -1,0 +1,10 @@
+node_modules/
+dist/
+public/preview-runtime.js
+output/
+.playwright-cli/
+.DS_Store
+.env
+.env.*
+!.env.example
+*.log

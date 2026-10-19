@@ -1,0 +1,29 @@
+{
+  "name": "sprout-learning",
+  "version": "1.0.0",
+  "description": "A little learning, a lot of growth. Learn JavaScript and React at your own pace.",
+  "scripts": {
+    "dev": "node scripts/build-preview.mjs && vite",
+    "build": "node scripts/build-preview.mjs && vite build",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@babel/standalone": "^8.0.7",
+    "lucide-react": "^1.59.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.1.2",
+    "esbuild": "^0.28.2",
+    "vite": "^8.3.4"
+  },
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "^22.18.0 || >=24.11.0"
+  }
+}
