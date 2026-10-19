@@ -1,0 +1,78 @@
+{
+  "lessonIds": [
+    "js-welcome",
+    "js-variables",
+    "js-types",
+    "js-operators",
+    "js-conditions",
+    "js-functions",
+    "js-arrays",
+    "js-objects",
+    "react-components",
+    "react-jsx",
+    "react-props",
+    "react-events",
+    "react-state",
+    "react-lists",
+    "react-forms",
+    "react-sharing",
+    "js-destructuring",
+    "js-scope",
+    "js-closures",
+    "js-promises",
+    "js-async",
+    "js-errors",
+    "js-event-loop",
+    "js-prototypes",
+    "react-effects",
+    "react-refs",
+    "react-reducers",
+    "react-context",
+    "react-custom-hooks",
+    "react-performance",
+    "react-async-ui",
+    "react-quality",
+    "js-pipelines",
+    "js-modules",
+    "js-fetch",
+    "js-concurrency",
+    "js-debounce",
+    "js-testing",
+    "react-boundaries",
+    "react-transitions",
+    "react-composition",
+    "react-navigation",
+    "react-suspense",
+    "react-production-review"
+  ],
+  "checklists": {
+    "greeting": [
+      "Add a visible label and a name input.",
+      "Store the name in React state.",
+      "Display a greeting that updates as the user types.",
+      "Show a friendly fallback when the input is empty."
+    ],
+    "tasks": [
+      "Add a task through a labeled form.",
+      "Give every task a stable ID.",
+      "Toggle a task between active and completed.",
+      "Delete a task without mutating the original array.",
+      "Display a helpful empty state."
+    ],
+    "budget": [
+      "Represent expenses as objects with a name and amount.",
+      "Calculate the total with reduce.",
+      "Filter expenses over a chosen amount.",
+      "Write a reusable function that returns the remaining budget.",
+      "Handle an empty expense list correctly."
+    ],
+    "library": [
+      "Create a reusable book card with stable keys.",
+      "Add a controlled search input.",
+      "Use a reducer to add, remove, and favorite books.",
+      "Provide useful empty and no-results states.",
+      "Check all interactions using only the keyboard.",
+      "Write down three user behavior tests to automate in a full project."
+    ]
+  }
+}
