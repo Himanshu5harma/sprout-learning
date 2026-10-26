@@ -1,7 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { transform } from "@babel/standalone";
 import { allLessons, orderedLessons, projects } from "../src/curriculum.js";
 import {
   migrateProgress,
@@ -12,7 +11,7 @@ import {
   taskIsCurrent,
 } from "../src/learning/progress.js";
 import { predictionMatches } from "../src/learning/predictions.js";
-import { loopGuard } from "../src/learning/compile-react.js";
+import { compileReact } from "../src/learning/compile-react.js";
 import { execute } from "./execution-helper.mjs";
 
 const passed = (result) =>
@@ -242,7 +241,7 @@ test("worker captures later timer output and reports asynchronous callback failu
   );
 });
 
-test("all React examples and task variants compile with the installed JSX compiler", () => {
+test("all React examples and task variants compile with the installed JSX compiler", async () => {
   let count = 0;
   for (const lesson of allLessons.filter(
     (lesson) => lesson.category === "React",
@@ -252,14 +251,7 @@ test("all React examples and task variants compile with the installed JSX compil
       ...lesson.teaching.tasks.flatMap((task) => [task.starter, task.solution]),
       lesson.teaching.independent.solution,
     ]) {
-      assert.doesNotThrow(
-        () =>
-          transform(source, {
-            presets: [["react", { runtime: "classic" }]],
-            plugins: [loopGuard, "transform-modules-commonjs"],
-          }),
-        lesson.id,
-      );
+      await assert.doesNotReject(() => compileReact(source), lesson.id);
       count++;
     }
   }

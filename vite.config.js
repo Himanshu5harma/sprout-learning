@@ -1,6 +1,12 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 export default defineConfig({
-  plugins: [react()],
-  server: { host: "127.0.0.1" },
+  plugins: [react(), tailwindcss()],
+  server: {
+    host: "127.0.0.1",
+    watch: { ignored: ["**/output/**", "**/dist/**"] },
+  },
+  worker: { format: "es" },
+  build: { manifest: true },
 });

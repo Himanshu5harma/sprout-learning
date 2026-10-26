@@ -19,6 +19,45 @@ export const emptyProgress = () => ({
 const objectOrEmpty = (value) =>
   value && typeof value === "object" && !Array.isArray(value) ? value : {};
 
+const safeKey = (key) =>
+  !["__proto__", "constructor", "prototype"].includes(key) && key.length <= 240;
+function cleanRecord(value, validate) {
+  return Object.fromEntries(
+    Object.entries(objectOrEmpty(value))
+      .filter(([key, item]) => safeKey(key) && validate(item))
+      .slice(0, 10000),
+  );
+}
+const plain = (value) =>
+  !!value && typeof value === "object" && !Array.isArray(value);
+function evidence(value) {
+  return (
+    plain(value) &&
+    ["passed", "assisted", "checked", "revealed", "correct"].every(
+      (key) => !(key in value) || typeof value[key] === "boolean",
+    ) &&
+    ["revision", "attempts"].every(
+      (key) =>
+        !(key in value) ||
+        (Number.isSafeInteger(value[key]) && value[key] >= 0),
+    ) &&
+    (!("cases" in value) ||
+      (Array.isArray(value.cases) &&
+        value.cases.length <= 100 &&
+        value.cases.every(
+          (item) =>
+            plain(item) &&
+            typeof item.label === "string" &&
+            item.label.length <= 8000 &&
+            typeof item.passed === "boolean",
+        ))) &&
+    ["fingerprint", "checkedAt", "signature"].every(
+      (key) =>
+        !(key in value) ||
+        (typeof value[key] === "string" && value[key].length <= 100),
+    )
+  );
+}
 // Additive migration: keep legacy completions, every draft key, checklist index,
 // and unknown fields. A new exercise never overwrites an old example draft.
 export function migrateProgress(saved) {
@@ -28,19 +67,49 @@ export function migrateProgress(saved) {
     ...source,
     schemaVersion: 2,
     completed: Array.isArray(source.completed)
-      ? source.completed.filter((id) => typeof id === "string")
+      ? source.completed
+          .filter((id) => typeof id === "string" && safeKey(id))
+          .slice(0, 10000)
       : [],
     bookmarks: Array.isArray(source.bookmarks)
-      ? source.bookmarks.filter((id) => typeof id === "string")
+      ? source.bookmarks
+          .filter((id) => typeof id === "string" && safeKey(id))
+          .slice(0, 10000)
       : [],
-    activity: objectOrEmpty(source.activity),
-    projects: objectOrEmpty(source.projects),
-    drafts: objectOrEmpty(source.drafts),
-    practice: objectOrEmpty(source.practice),
-    predictions: objectOrEmpty(source.predictions),
-    reflections: objectOrEmpty(source.reflections),
-    knowledge: objectOrEmpty(source.knowledge),
-    name: typeof source.name === "string" ? source.name : "",
+    activity: cleanRecord(
+      source.activity,
+      (item) => Number.isFinite(item) && item >= 0 && item <= 100000,
+    ),
+    projects: Object.fromEntries(
+      Object.entries(cleanRecord(source.projects, plain)).map(
+        ([key, value]) => [
+          key,
+          cleanRecord(value, (item) => typeof item === "boolean"),
+        ],
+      ),
+    ),
+    drafts: cleanRecord(
+      source.drafts,
+      (item) => typeof item === "string" && item.length <= 100000,
+    ),
+    practice: cleanRecord(source.practice, evidence),
+    predictions: cleanRecord(
+      source.predictions,
+      (item) =>
+        evidence(item) &&
+        (!("answer" in item) || typeof item.answer === "string"),
+    ),
+    reflections: cleanRecord(
+      source.reflections,
+      (item) => typeof item === "string" && item.length <= 100000,
+    ),
+    knowledge: cleanRecord(
+      source.knowledge,
+      (item) =>
+        evidence(item) &&
+        (!("answer" in item) || Number.isSafeInteger(item.answer)),
+    ),
+    name: typeof source.name === "string" ? source.name.slice(0, 200) : "",
     dailyGoal: [10, 15, 30, 45].includes(source.dailyGoal)
       ? source.dailyGoal
       : 15,
@@ -87,11 +156,31 @@ export function codeFingerprint(code) {
   return (hash >>> 0).toString(16);
 }
 
+export function taskSignature(task) {
+  return codeFingerprint(
+    JSON.stringify([
+      task.revision,
+      task.goal,
+      task.starting,
+      task.instructions,
+      task.expected,
+      task.constraints,
+      task.starter,
+      task.checks,
+    ]),
+  );
+}
+
 export function taskIsCurrent(record, task, code) {
   return (
     !!record?.passed &&
     record.revision === task.revision &&
-    record.fingerprint === codeFingerprint(code)
+    record.fingerprint ===
+      (typeof code === "string"
+        ? codeFingerprint(code)
+        : task.starterFingerprint) &&
+    (!(task.signature || task.checks) ||
+      record.signature === (task.signature || taskSignature(task)))
   );
 }
 

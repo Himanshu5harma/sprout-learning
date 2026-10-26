@@ -83,6 +83,8 @@ export default function CodeEditor({
   discussedLine,
 }) {
   const host = useRef(null);
+  const currentValue = useRef(value);
+  currentValue.current = value;
   const editor = useRef(null);
   const callbacks = useRef({ onChange, onRun });
   const lineHighlight = useRef(new Compartment());
@@ -92,7 +94,7 @@ export default function CodeEditor({
     const view = new EditorView({
       parent: host.current,
       state: EditorState.create({
-        doc: value,
+        doc: currentValue.current,
         extensions: [
           lineNumbers(),
           EditorView.lineWrapping,
@@ -107,7 +109,7 @@ export default function CodeEditor({
           EditorView.contentAttributes.of({
             "aria-label": label,
             "aria-multiline": "true",
-            role: readOnly ? "region" : "textbox",
+            role: "textbox",
             ...(readOnly ? { tabindex: "0" } : {}),
           }),
           lineHighlight.current.of([]),

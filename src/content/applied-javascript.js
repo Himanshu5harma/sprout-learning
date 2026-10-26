@@ -1,4 +1,4 @@
-import { valueCheck as check, outputCheck } from "../learning/lesson-model.js";
+import { valueCheck as check } from "../learning/lesson-model.js";
 
 export const appliedJavaScript = [
   {
