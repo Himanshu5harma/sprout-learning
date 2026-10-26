@@ -16,6 +16,8 @@ for (const id of [
   "react-transitions",
   "react-suspense",
   "react-refs",
+  "react-effects",
+  "react-async-ui",
 ])
   test(`isolated renderer preserves ${id} behaviour`, async ({ page }) => {
     await page.goto("/tests/browser/harness.html");

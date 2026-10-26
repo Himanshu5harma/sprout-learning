@@ -10,6 +10,8 @@ The only host bindings carry bounded JSON output, bounded timers, and cancellati
 
 Awaited promises and timer exceptions surface as errors. The current QuickJS wrapper does not expose a global unhandled-promise rejection tracker: a detached rejected promise may not be reported. Await or return asynchronous exercise work; this is a documented execution limitation, rather than a simulated browser guarantee.
 
+React host commands wait until the compiler and renderer finish initializing. The startup queue accepts at most 100 validated commands and is cleared on a terminal initialization error; the existing worker startup watchdog and cancellation still apply. The preview requests the first render, so loading the renderer does not mount effects an extra time.
+
 WebAssembly/interpreter/browser bugs remain part of the trusted computing base. These limits cannot guarantee availability if the browser or OS itself stalls, kills a tab, or exhausts resources outside the guest. The preview is a teaching tool, not a hostile-code hosting service, credential boundary, or high-stakes examination/anti-cheat system. Learners control their own files and progress exports; checks are not attestations.
 
 ## React rendering

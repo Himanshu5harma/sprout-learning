@@ -21,6 +21,8 @@ npm run test:browser      # production browser harness, journeys, accessibility,
 
 For an intentional visual change, inspect the rendered screens before running `npx playwright test tests/browser/visual.spec.ts --update-snapshots`. Commit reviewed baselines, never failure artifacts. Browser tests use isolated profiles and their own local preview server on port 4173; they never clear your normal browser's learning data.
 
+The PNGs in `tests/browser/__screenshots__/` are reviewed references used by visual tests. The wide progress screen has separate macOS and Linux references because full-page text wrapping differs; the other three screens share references. Actual screenshots, traces, and HTML reports stay in ignored `output/`; generated assets, build output, and dependencies are also excluded from Git.
+
 `npm run format` formats authored files. `npm run format:check` only checks. Generated artifacts and the original compact design stylesheet are excluded from formatting.
 
 ## Learning experience
@@ -50,4 +52,4 @@ Everything stays in this browser on this device. Export/import provides portable
 
 Build with `npm run build` and serve **dist/** over HTTPS. Cloudflare Pages can use that command/output, with its production branch configured separately. `public/_headers` supplies CSP and other response headers for Pages; other hosts must apply equivalent headers. Serve `.wasm` as `application/wasm`. Keep hashed assets available through a release so already-open tabs can finish loading lazy chunks. There is no service worker or guarantee of a fresh offline load; already-loaded local editing works offline, while an unloaded lesson/editor may need a connection.
 
-CI performs local quality checks. This upgrade has not deployed or verified a Cloudflare deployment. Check production response headers, MIME types, caching, and a fresh JS/React practice run after deploying.
+CI performs quality checks. Cloudflare reported a successful PR preview build, but live preview behaviour and a production deployment have not been verified. Check production response headers, MIME types, caching, and a fresh JS/React practice run after deploying.

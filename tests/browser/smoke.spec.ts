@@ -23,3 +23,46 @@ test("JavaScript executes and React renders interactive state", async ({
   await expect(frame.getByText("Count 1", { exact: true })).toBeVisible();
   expect(errors).toEqual([]);
 });
+
+test("React startup queues commands while the renderer is loading", async ({
+  page,
+  context,
+}) => {
+  let requested = false;
+  let release!: () => void;
+  const loading = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await context.route("**/react-guest-*.js", async (route) => {
+    requested = true;
+    await loading;
+    await route.continue();
+  });
+  try {
+    await page.goto("/#practice");
+    await page.getByRole("button", { name: "React", exact: true }).click();
+    const started = page.waitForEvent("worker");
+    await page.getByRole("button", { name: "Run code", exact: true }).click();
+    const worker = await started;
+    await expect.poll(() => requested).toBe(true);
+    // The real preview can request another render while its compiler/renderer
+    // chunk is still loading. Hold that chunk to reproduce the CI race.
+    await worker.evaluate(() =>
+      self.dispatchEvent(
+        new MessageEvent("message", {
+          data: { type: "render" },
+        }),
+      ),
+    );
+    release();
+    await expect(
+      page.frameLocator("iframe").getByRole("heading", {
+        name: "Your first shop",
+        exact: true,
+      }),
+    ).toBeVisible();
+    await expect(page.locator(".learning-error")).toHaveCount(0);
+  } finally {
+    release();
+  }
+});

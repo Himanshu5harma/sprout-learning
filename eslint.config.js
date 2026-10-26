@@ -71,17 +71,4 @@ export default tseslint.config(
       ),
     },
   },
-  {
-    files: ["scripts/verify-*.mjs"],
-    languageOptions: {
-      globals: {
-        document: "readonly",
-        localStorage: "readonly",
-        window: "readonly",
-        getComputedStyle: "readonly",
-        innerWidth: "readonly",
-        innerHeight: "readonly",
-      },
-    },
-  },
 );

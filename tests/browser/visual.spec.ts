@@ -16,7 +16,12 @@ for (const sample of [
         () => document.documentElement.scrollWidth <= innerWidth + 1,
       ),
     ).toBe(true);
-    await expect(page).toHaveScreenshot(`${sample.name}.png`, {
+    // Full-page progress text wraps differently with Linux and macOS fonts.
+    const reference =
+      sample.name === "wide-progress"
+        ? `${sample.name}-${process.platform}.png`
+        : `${sample.name}.png`;
+    await expect(page).toHaveScreenshot(reference, {
       fullPage: true,
       animations: "disabled",
       maxDiffPixelRatio: 0.02,
