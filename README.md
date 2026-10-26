@@ -1,46 +1,55 @@
 # Sprout
 
-Learn JavaScript and React by building small working features. Built with React and Vite, preserving the existing Sprout design and navigation.
+Learn JavaScript and React by building small working features. Sprout keeps its soft green identity, 53 lessons, original lesson IDs, runnable practice, bookmarks, quizzes, drafts, goals, and seven project journeys.
 
-## Run
+## Develop
 
-Use Node 22.18+ on the 22.x line, or Node 24.11+.
+Use Node **22.18+ on 22.x**, or **24.11+**. Install the exact locked dependencies:
 
 ```sh
-npm install
+npm ci
 npm run dev
-npm test
-npm run build
-npm run preview
 ```
 
-## Learning flow
+The development/build commands generate the lightweight lesson catalog and the trusted isolated React renderer. Do not edit `src/generated/` by hand.
 
-Each lesson opens with a short explanation (at most 55 words), a highlighted example, its expected result, and **Try the task**. Practice opens directly on one independent exercise. Longer explanations, syntax walkthroughs, prediction/change/fill/fix exercises, and personal explanation notes are optional.
+```sh
+npm run check             # lint, strict types, non-mutating format check, tests, build, budgets
+npx playwright install chromium
+npm run test:browser      # production browser harness, journeys, accessibility, visual checks
+```
 
-All 53 lessons include prerequisite links, hints, explained solutions, common mistakes, and project connections. New completion requires a checked practical solution and a knowledge check. Behaviour checks accept alternative implementations and become stale when code changes. Viewing a solution marks the result as assisted. Earlier completions remain intact.
+For an intentional visual change, inspect the rendered screens before running `npx playwright test tests/browser/visual.spec.ts --update-snapshots`. Commit reviewed baselines, never failure artifacts. Browser tests use isolated profiles and their own local preview server on port 4173; they never clear your normal browser's learning data.
 
-The connected shop journey progresses from product data and calculations to React controls, shared cart state, and loading/error recovery. Four original projects remain alongside three connected projects. Project checklists are self-reported; automated results are recorded separately.
+The PNGs in `tests/browser/__screenshots__/` are reviewed references used by visual tests. The wide progress screen has separate macOS and Linux references because full-page text wrapping differs; the other three screens share references. Actual screenshots, traces, and HTML reports stay in ignored `output/`; generated assets, build output, and dependencies are also excluded from Git.
 
-The recommended sequence reaches React Essentials after core JavaScript, destructuring, and scope. Deeper async and runtime topics follow the first interface rather than delaying it.
+`npm run format` formats authored files. `npm run format:check` only checks. Generated artifacts and the original compact design stylesheet are excluded from formatting.
 
-## Playground
+## Learning experience
 
-- JavaScript runs in a worker with a three-second limit. `console.log` prints output; returning a value does not print it. Short timers and async errors are captured. Page APIs such as `document` are unavailable.
-- React runs in an opaque sandbox with locally bundled React. Name the component `App` or export it as default. JSX and imports from `react` work. Extra packages and local file imports require a full project.
-- Form events work. A navigation guard explains a missing `preventDefault()` and fails the check rather than silently accepting it.
-- Network, routing, lazy modules, performance, test-runner, and deployment lessons label their local models and full-project steps. The preview cannot verify a deployed system or certify professional readiness.
+A short explanation, a working example, and one independent task form the default lesson. Longer theory, line explanations, and run/predict/change/fill/fix warmups stay optional. A practical check and a knowledge check support new completions. Existing completions remain historical milestones, even if current evidence needs rechecking.
 
-CodeMirror 6 provides matching syntax colours, line numbers, and dark code surfaces in examples and editable code. Tab leaves the editor; Ctrl/Cmd+Enter runs code. The JSX compiler loads when needed. The runtime is generated before `dev` and `build`.
+The progress page separates saved drafts, assisted checks, independent checks, stale results, knowledge checks, and self-reported project checklists. Checks cover listed cases; they do not establish mastery. Estimated minutes add published lesson durations, rather than recording elapsed screen time. Streak encouragement is optional.
 
-## Saved work
+## Stack and organization
 
-The `sprout-learning-v1` key is retained. Additive migration keeps legacy lesson IDs, every draft key, bookmarks, completions, activity, goals, checklist indices, and unknown fields. It takes one original backup in `sprout-learning-backup-before-practice-v2`. Exercises use separate draft keys. Unreadable saves are retained for recovery rather than overwritten.
+React 19, Vite 8, incremental strict TypeScript, Tailwind 4, CodeMirror 6, Zod, IndexedDB, and a QuickJS WebAssembly execution boundary. Real React runs inside the isolated interpreter through a small pinned custom renderer; learner code never executes in the browser's JavaScript realm.
 
-Storage is local to the browser, without accounts or cloud sync. Learning minutes use estimated lesson durations rather than elapsed screen time.
+- `src/content/`, `src/curriculum.js`: authored lessons and projects, with stable IDs.
+- `src/domain/`: typed validation contracts.
+- `src/execution/`: isolated engine, worker protocol, React adapter/session lifecycle.
+- `src/persistence/`: transactional local store, draft subscriptions, conflict recovery.
+- `src/pages/`, `src/features/`: focused screen and progress experiences.
+- `src/app/`: navigation, lazy content loading, composed dialogs.
+- `src/ui/`, `src/shared/`: accessible primitives and existing visual components.
+- `src/design-system.css`: Tailwind tokens and shared variants. Specialized editor/lesson/responsive CSS remains.
 
-## Source and checks
+See [architecture](docs/engineering/architecture.md), [execution security](docs/engineering/security.md), [saved-data compatibility](docs/engineering/persistence.md), and [verification](docs/engineering/verification.md).
 
-Curriculum and concise summaries live in `src/content/`; teaching components in `src/components/`; execution and persistence in `src/learning/`. `src/styles.css` preserves the original visual design, with learning additions in `src/learning.css` and readable type/fluid layouts in `src/responsive.css`.
+## Data and deployment
 
-See [the teaching and verification record](docs/teaching-verification.md) for checks actually performed, browser rerun instructions, and remaining limits.
+Everything stays in this browser on this device. Export/import provides portable backups; it is not cloud sync. Account-based cross-device sync requires a deliberate backend, authentication, privacy, and cost decision. No service has been added.
+
+Build with `npm run build` and serve **dist/** over HTTPS. Cloudflare Pages can use that command/output, with its production branch configured separately. `public/_headers` supplies CSP and other response headers for Pages; other hosts must apply equivalent headers. Serve `.wasm` as `application/wasm`. Keep hashed assets available through a release so already-open tabs can finish loading lazy chunks. There is no service worker or guarantee of a fresh offline load; already-loaded local editing works offline, while an unloaded lesson/editor may need a connection.
+
+CI performs quality checks. Cloudflare reported a successful PR preview build, but live preview behaviour and a production deployment have not been verified. Check production response headers, MIME types, caching, and a fresh JS/React practice run after deploying.

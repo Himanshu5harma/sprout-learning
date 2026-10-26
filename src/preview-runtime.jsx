@@ -1,73 +1,138 @@
-import React from "react";
-import { createRoot } from "react-dom/client";
-
+// Trusted DOM adapter. Learner code runs only inside QuickJS in a worker.
+import { treeSchema } from "./execution/protocol";
+import { z } from "zod";
 const container = document.getElementById("app");
-const nativeTimeout = window.setTimeout.bind(window);
-const nativeClearTimeout = window.clearTimeout.bind(window);
-const nativeInterval = window.setInterval.bind(window);
-const nativeClearInterval = window.clearInterval.bind(window);
-const timers = new Map();
 const logs = [];
-let root = null;
 let currentRun = null;
 let fatal = null;
-
+let timerCount = 0;
+let revision = 0;
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 function send(type, data = {}) {
-  window.parent.postMessage({ type, runId: currentRun, ...data }, "*");
+  parent.postMessage({ type, runId: currentRun, ...data }, "*");
 }
-function format(value) {
-  if (typeof value === "string") return value;
-  try {
-    return JSON.stringify(value, null, 2) ?? String(value);
-  } catch {
-    return String(value);
-  }
-}
-for (const method of ["log", "info", "warn", "error"]) {
-  console[method] = (...args) => {
-    if (logs.length >= 150) return;
-    const line = args.map(format).join(" ").slice(0, 8000);
-    logs.push(line);
-    send("sprout-preview-log", { line });
-  };
-}
-window.setTimeout = (callback, delay = 0, ...args) => {
-  const id = nativeTimeout(() => {
-    timers.delete(id);
-    callback(...args);
-  }, delay);
-  timers.set(id, "timeout");
-  return id;
-};
-window.clearTimeout = (id) => {
-  timers.delete(id);
-  nativeClearTimeout(id);
-};
-window.setInterval = (callback, delay = 0, ...args) => {
-  const id = nativeInterval(callback, delay, ...args);
-  timers.set(id, "interval");
-  return id;
-};
-window.clearInterval = (id) => {
-  timers.delete(id);
-  nativeClearInterval(id);
-};
-const delay = (ms) => new Promise((resolve) => nativeTimeout(resolve, ms));
-// Permit form events inside the opaque sandbox, but keep accidental default
-// submission from navigating the practice frame away from the learner's work.
-document.addEventListener("submit", (event) => {
-  if (!event.defaultPrevented) {
-    event.preventDefault();
-    fatal = new Error(
-      "The form tried to navigate away. In its onSubmit handler, call event.preventDefault() before updating state. The preview kept your work on screen.",
-    );
-    fatal.name = "FormNavigation";
-    send("sprout-preview-error", {
-      message: fatal.message,
-      name: "FormNavigation",
+const allowedTags = new Set(
+  "div span p h1 h2 h3 h4 h5 h6 button input textarea select option form label ul ol li strong em b i small section article header footer main nav aside output fieldset legend br hr code pre table thead tbody tr th td dl dt dd details summary a".split(
+    " ",
+  ),
+);
+const allowedProps = new Set(
+  "id className title role htmlFor type name value defaultValue checked defaultChecked disabled placeholder required min max step maxLength rows cols multiple tabIndex autoComplete aria-label aria-labelledby aria-describedby aria-live aria-atomic aria-expanded aria-pressed aria-checked aria-hidden data-testid".split(
+    " ",
+  ),
+);
+const styleProps = new Set(
+  "color backgroundColor padding margin fontSize fontWeight display gap border borderRadius textAlign width maxWidth minHeight opacity textDecoration flexDirection alignItems justifyContent gridTemplateColumns".split(
+    " ",
+  ),
+);
+const domNodes = new Map();
+function applyTree(tree) {
+  const used = new Set();
+  function patch(spec) {
+    if (!allowedTags.has(spec.type) && spec.type !== "#text")
+      throw new Error(
+        "Unsupported preview element: " +
+          spec.type +
+          ". Use a local project for browser resources or embedded content.",
+      );
+    used.add(spec.id);
+    let node = domNodes.get(spec.id);
+    if (
+      !node ||
+      (spec.type === "#text"
+        ? node.nodeType !== 3
+        : node.localName !== spec.type)
+    ) {
+      node =
+        spec.type === "#text"
+          ? document.createTextNode("")
+          : document.createElement(spec.type);
+      domNodes.set(spec.id, node);
+    }
+    if (spec.type === "#text") {
+      node.textContent = spec.hidden ? "" : spec.text || "";
+      return node;
+    }
+    node.dataset.sproutId = String(spec.id);
+    for (const attribute of [...node.attributes])
+      if (attribute.name !== "data-sprout-id")
+        node.removeAttribute(attribute.name);
+    const props = spec.props || {};
+    for (const [key, value] of Object.entries(props)) {
+      if (allowedProps.has(key) && value !== null && value !== false) {
+        const attr =
+          key === "className" ? "class" : key === "htmlFor" ? "for" : key;
+        node.setAttribute(attr, value === true ? "" : String(value));
+      }
+    }
+    if ("disabled" in node) node.disabled = !!props.disabled;
+    if ("checked" in props) node.checked = !!props.checked;
+    if (
+      "value" in props &&
+      "value" in node &&
+      node.value !== String(props.value ?? "")
+    )
+      node.value = String(props.value ?? "");
+    if (props.style && typeof props.style === "object")
+      for (const [key, value] of Object.entries(props.style)) {
+        if (
+          styleProps.has(key) &&
+          !/url\s*\(|expression|@import/i.test(String(value))
+        )
+          node.style[key] =
+            typeof value === "number" &&
+            !["opacity", "fontWeight"].includes(key)
+              ? value + "px"
+              : String(value);
+      }
+    node.hidden = !!spec.hidden;
+    const children = (spec.children || []).map(patch);
+    children.forEach((child, i) => {
+      if (node.childNodes[i] !== child)
+        node.insertBefore(child, node.childNodes[i] || null);
     });
+    while (node.childNodes.length > children.length) node.lastChild.remove();
+    node.__sproutEvents = props;
+    return node;
   }
-});
+  const children = tree.map(patch);
+  children.forEach((child, i) => {
+    if (container.childNodes[i] !== child)
+      container.insertBefore(child, container.childNodes[i] || null);
+  });
+  while (container.childNodes.length > children.length)
+    container.lastChild.remove();
+  for (const id of domNodes.keys()) if (!used.has(id)) domNodes.delete(id);
+  revision++;
+}
+for (const [native, eventName] of [
+  ["click", "onClick"],
+  ["input", "onChange"],
+  ["submit", "onSubmit"],
+  ["keydown", "onKeyDown"],
+]) {
+  container.addEventListener(native, (event) => {
+    if (native === "submit" || event.target.closest("a"))
+      event.preventDefault();
+    let node = event.target;
+    while (node && node !== container) {
+      if (node.__sproutEvents?.[eventName]) {
+        send("sprout-preview-command", {
+          command: {
+            type: "event",
+            id: Number(node.dataset.sproutId),
+            event: eventName,
+            value: String(event.target.value || ""),
+            checked: !!event.target.checked,
+            key: event.key,
+          },
+        });
+      }
+      node = node.parentElement;
+    }
+  });
+}
 const normalize = (value) => String(value).replace(/\s+/g, " ").trim();
 function labelFor(element) {
   const labelled = element.getAttribute("aria-labelledby");
@@ -114,7 +179,7 @@ function field(label) {
   return find("textbox", label);
 }
 async function waitFor(test, description) {
-  const deadline = Date.now() + 1600;
+  const deadline = Date.now() + (revision ? 1600 : 12000);
   do {
     if (fatal) throw fatal;
     if (test()) return;
@@ -126,7 +191,6 @@ function screenText() {
   return normalize(container.innerText);
 }
 async function step(action) {
-  window.__sproutSteps = 0;
   const value = normalize(action.value ?? "");
   if (action.action === "text")
     return waitFor(
@@ -222,15 +286,14 @@ async function step(action) {
     return;
   }
   if (action.action === "unmount") {
-    root?.unmount();
-    root = null;
+    send("sprout-preview-command", { command: { type: "unmount" } });
     await delay(35);
     return;
   }
   if (action.action === "noTimers") {
-    if (timers.size)
+    if (timerCount)
       throw new Error(
-        `${timers.size} timer(s) still run after removal. Return cleanup from the effect and clear each timer ID.`,
+        `${timerCount} timer(s) still run after removal. Return cleanup from the effect and clear each timer ID.`,
       );
     return;
   }
@@ -248,74 +311,56 @@ async function step(action) {
   }
   throw new Error(`Unknown curriculum check action: ${action.action}`);
 }
-function clearTrackedTimers() {
-  for (const [id, kind] of timers)
-    (kind === "interval" ? nativeClearInterval : nativeClearTimeout)(id);
-  timers.clear();
-}
-async function render(App) {
-  root?.unmount();
-  root = null;
-  clearTrackedTimers();
+async function render() {
   logs.splice(0);
   fatal = null;
-  window.__sproutSteps = 0;
-  root = createRoot(container, {
-    onUncaughtError(error) {
+  timerCount = 0;
+  const previous = revision;
+  send("sprout-preview-command", { command: { type: "render" } });
+  await waitFor(
+    () => revision > previous,
+    "The component did not render. Stop and run it again.",
+  );
+  await delay(40);
+  if (fatal) throw fatal;
+}
+window.addEventListener("message", async (event) => {
+  if (event.source !== parent) return;
+  const data = event.data;
+  if (data?.type === "sprout-runtime-event" && data.runId === currentRun) {
+    const value = data.event;
+    try {
+      if (value.type === "tree")
+        applyTree(z.array(treeSchema).max(2000).parse(value.tree));
+      if (value.type === "focus") domNodes.get(value.id)?.focus();
+      if (value.type === "timers") timerCount = value.count;
+      if (value.type === "log") {
+        if (logs.length < 150) logs.push(String(value.line).slice(0, 8000));
+        send("sprout-preview-log", { line: value.line });
+      }
+      if (value.type === "error")
+        throw Object.assign(new Error(value.error), { name: value.errorName });
+    } catch (error) {
       fatal = error;
       send("sprout-preview-error", {
         message: error.message,
         name: error.name,
       });
-    },
-    onCaughtError(error) {
-      send("sprout-preview-diagnostic", { message: error.message });
-    },
-  });
-  root.render(React.createElement(App));
-  await delay(40);
-  if (fatal) throw fatal;
-}
-window.addEventListener("error", (event) => {
-  fatal = event.error || new Error(event.message);
-  send("sprout-preview-error", { message: fatal.message, name: fatal.name });
-});
-window.addEventListener("unhandledrejection", (event) => {
-  fatal =
-    event.reason instanceof Error
-      ? event.reason
-      : new Error(String(event.reason));
-  send("sprout-preview-error", { message: fatal.message, name: fatal.name });
-});
-window.addEventListener("message", async (event) => {
-  if (event.source !== window.parent || event.data?.type !== "sprout-render")
+    }
     return;
-  currentRun = event.data.runId;
+  }
+  if (
+    data?.type !== "sprout-render" ||
+    typeof data.runId !== "string" ||
+    currentRun
+  )
+    return;
+  currentRun = data.runId;
   try {
-    const exports = {};
-    const require = (name) => {
-      if (name === "react") return React;
-      throw new Error(
-        "Unsupported import: " +
-          name +
-          ". This playground supports imports from react only.",
-      );
-    };
-    window.__sproutSteps = 0;
-    const App = new Function(
-      "React",
-      "require",
-      "exports",
-      `${event.data.code}\nreturn typeof App !== 'undefined' ? App : exports.default;`,
-    )(React, require, exports);
-    if (typeof App !== "function")
-      throw new Error(
-        "Name your component App, or export a component as default.",
-      );
     const results = [];
-    for (const check of event.data.checks || []) {
+    for (const check of data.checks || []) {
       try {
-        await render(App);
+        await render();
         for (const action of check.steps) await step(action);
         results.push({
           label: check.label,
@@ -333,8 +378,8 @@ window.addEventListener("message", async (event) => {
         });
       }
     }
-    await render(App);
-    send("sprout-preview-complete", { checks: results });
+    await render();
+    if (!fatal) send("sprout-preview-complete", { checks: results });
   } catch (error) {
     send("sprout-preview-error", { message: error.message, name: error.name });
   }

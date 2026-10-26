@@ -1,2 +1,7 @@
 # Preserve the existing visual design stylesheet without unrelated reformatting.
 src/styles.css
+
+src/generated/
+public/preview-runtime.js
+output/
+dist/

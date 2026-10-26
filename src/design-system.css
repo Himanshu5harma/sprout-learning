@@ -1,0 +1,334 @@
+@layer theme, base, legacy, components, utilities;
+@import "tailwindcss";
+@import "./styles.css" layer(legacy);
+@theme {
+  --color-sprout-forest: #2e5744;
+  --color-sprout-ink: #283a30;
+  --color-sprout-muted: #596650;
+  --color-sprout-sage: #eaf0e1;
+  --color-sprout-paper: #fffefa;
+  --color-sprout-line: #d9dfd1;
+  --color-sprout-danger: #943e32;
+  --font-sans: "DM Sans Variable", "DM Sans", sans-serif;
+  --font-heading: "Manrope Variable", "Manrope", sans-serif;
+  --font-mono: "DM Mono", monospace;
+  --radius-card: 0.875rem;
+  --shadow-card: 0 2px 12px #283a3008;
+}
+@layer components {
+  .ui-button {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 py-2 font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .ui-button-primary {
+    @apply bg-sprout-forest text-white hover:bg-sprout-ink;
+  }
+  .ui-button-secondary {
+    @apply border border-sprout-line bg-sprout-paper text-sprout-forest hover:bg-sprout-sage;
+  }
+  .ui-button-danger {
+    @apply bg-sprout-danger text-white;
+  }
+  .ui-button-quiet {
+    @apply text-sprout-forest hover:bg-sprout-sage;
+  }
+  .ui-card {
+    @apply rounded-card border border-sprout-line bg-sprout-paper p-5 shadow-card;
+  }
+  .ui-feedback {
+    @apply my-3 rounded-lg border border-sprout-line bg-sprout-sage p-4 text-sprout-ink;
+  }
+  .ui-feedback-error {
+    @apply border-sprout-danger bg-red-50 text-sprout-danger;
+  }
+  .ui-feedback-success {
+    @apply border-sprout-forest;
+  }
+  .ui-field {
+    @apply grid gap-2;
+  }
+  .ui-field label {
+    @apply font-semibold;
+  }
+  .ui-field input {
+    @apply min-h-11 max-w-full rounded-lg border border-sprout-line bg-white px-3 py-2;
+  }
+  .ui-field p {
+    @apply text-sm text-sprout-muted;
+  }
+  .ui-tabs {
+    @apply flex flex-wrap gap-2;
+  }
+  .ui-tabs button {
+    @apply min-h-11 rounded-lg border border-sprout-line px-4 py-2 text-sprout-forest;
+  }
+  .ui-tabs button[aria-selected="true"] {
+    @apply bg-sprout-forest text-white;
+  }
+}
+/* Restore native modal centering after Preflight resets margins. This also
+   replaces legacy search offsets so every dialog shares the same alignment. */
+.dialog {
+  margin: auto;
+}
+:root {
+  --muted: #596650;
+}
+body {
+  font-family: var(--font-sans);
+}
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-heading);
+}
+:where(button, a, input, textarea, select, summary, [tabindex]):focus-visible {
+  outline: 3px solid #426a2e;
+  outline-offset: 4px;
+}
+.save-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.875rem;
+  color: #425b3b;
+}
+.save-error,
+.save-recovery {
+  color: #943e32;
+}
+.save-indicator button {
+  text-decoration: underline;
+}
+.progress-layout {
+  display: grid;
+  gap: 1.25rem;
+}
+.progress-layout h2 {
+  font-size: 1.25rem;
+  margin-bottom: 0.7rem;
+}
+.progress-layout h3 {
+  font-size: 1.08rem;
+}
+.progress-layout p {
+  line-height: 1.7;
+}
+.progress-actions {
+  display: flex;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+.evidence-list {
+  display: grid;
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+.evidence-list > li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.65rem;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--color-sprout-line);
+}
+.evidence-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.45rem;
+}
+.evidence-tag {
+  border: 1px solid #c2cbb5;
+  border-radius: 1rem;
+  padding: 0.15rem 0.65rem;
+  font-size: 0.85rem;
+  color: #435637;
+}
+.skill-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: 1rem;
+}
+.history-list {
+  padding-left: 1.25rem;
+  list-style: decimal;
+}
+.history-list li {
+  padding: 0.5rem 0;
+}
+.conflict-code {
+  max-height: 180px;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: 0.875rem/1.7 var(--font-mono);
+  background: #1d2b29;
+  color: #e0e9e4;
+  padding: 1rem;
+  border-radius: 0.5rem;
+}
+.confirm-dialog {
+  max-width: 540px;
+}
+.confirm-dialog .dialog-surface {
+  padding: 1.5rem;
+}
+.loading-feature {
+  padding: 2rem;
+  color: #425b3b;
+}
+.lesson-evidence {
+  display: block;
+  color: #435637;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  margin-top: 0.3rem;
+}
+@media (max-width: 700px) {
+  .header-actions .save-indicator {
+    display: none;
+  }
+  .evidence-list > li {
+    grid-template-columns: 1fr;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (max-width: 800px) {
+  .sidebar:not(.is-open) {
+    visibility: hidden;
+    pointer-events: none;
+  }
+  .sidebar.is-open {
+    visibility: visible;
+  }
+  .sidebar .icon-button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+/* Shared readable text tones on Sprout's existing light surfaces. */
+.app-shell
+  :is(
+    .workspace-label,
+    .nav-new,
+    .search-trigger kbd,
+    .stat-value > span,
+    .text-button,
+    .filter-tabs button:not(.selected),
+    .path-roadmap > button > span:nth-child(2),
+    .course-level,
+    .course-category,
+    .course-meta,
+    .course-card-bottom > div > span,
+    .tag,
+    .challenge-meta,
+    .small-encouragement p,
+    .small-encouragement strong,
+    .page-footer,
+    .page-footer span:last-child,
+    .lesson-number,
+    .project-level,
+    .project-category
+  ) {
+  color: var(--color-sprout-muted);
+}
+.app-shell .course-icon.yellow {
+  color: #746326;
+}
+.app-shell .course-icon.blue {
+  color: #3c697d;
+}
+.app-shell .course-icon.purple {
+  color: #76568d;
+}
+.app-shell .filter-tabs button.selected {
+  color: #fff;
+}
+.app-shell
+  :is(
+    .practice-banner small,
+    .practice-banner-action,
+    .outline-button,
+    .soft-note p,
+    .inline-link,
+    .project-card-footer > span,
+    .empty-state p
+  ) {
+  color: var(--color-sprout-muted);
+}
+.app-shell .tiny-js {
+  color: #655420;
+}
+
+.navigation-close {
+  display: none;
+}
+@media (max-width: 800px) {
+  .navigation-close {
+    display: inline-flex;
+    align-self: flex-end;
+    min-height: 44px;
+    min-width: 44px;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+.editor-footer {
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.editor-footer .save-indicator {
+  font-size: 0.8rem;
+}
+
+.brand,
+.profile-avatar {
+  font-family: var(--font-heading);
+}
+main h1 {
+  overflow-wrap: anywhere;
+}
+
+.editor-footer .save-indicator {
+  color: #d4e6c6;
+}
+.editor-footer :is(.save-error, .save-recovery) {
+  color: #ffb6a5;
+}
+.app-shell
+  :is(
+    .goal-options button > span,
+    .search-result small,
+    .search-result em,
+    .search-footer
+  ) {
+  color: var(--color-sprout-muted);
+}
+.app-shell :is(.field-label, .search-footer kbd) {
+  color: var(--color-sprout-muted);
+}
+.app-shell
+  :is(.text-input, .search-input-row input, .prediction-input)::placeholder {
+  color: var(--color-sprout-muted);
+  opacity: 1;
+}
+
+.execution-loading {
+  padding: 1rem;
+  color: var(--color-sprout-forest);
+  background: var(--color-sprout-sage);
+}
+.app-shell :is(.simple-modal-content > p, .help-content p) {
+  color: var(--color-sprout-muted);
+}

@@ -9,7 +9,12 @@ import {
 } from "lucide-react";
 import CodeEditor from "./CodeEditor.jsx";
 import { runJavaScript } from "../runner.js";
-import { compileReact } from "../learning/compile-react.js";
+import {
+  createReactSession,
+  previewDocument,
+} from "../execution/react-session";
+import { SaveIndicator } from "../ui/SaveIndicator";
+import { useDraft, useStorageGeneration } from "../persistence/store";
 import { explainError } from "../learning/errors.js";
 import { codeFingerprint } from "../learning/progress.js";
 
@@ -119,9 +124,13 @@ export default function CodeLab({
   guidance = false,
   onAssistance,
 }) {
-  const [code, setCode] = useState(() =>
-    typeof drafts?.[draftKey] === "string" ? drafts[draftKey] : initialCode,
+  const savedCode = useDraft(draftKey || "");
+  const [code, setCode] = useState(
+    () => savedCode ?? drafts?.[draftKey] ?? initialCode,
   );
+  useEffect(() => {
+    setCode(savedCode ?? initialCode);
+  }, [savedCode, initialCode]);
   const [output, setOutput] = useState(null);
   const [error, setError] = useState(null);
   const [checks, setChecks] = useState(null);
@@ -133,11 +142,25 @@ export default function CodeLab({
   const frame = useRef(null);
   const timer = useRef(null);
   const job = useRef(null);
+  const execution = useRef(null);
   const callbacks = useRef({ onResult });
   callbacks.current = { onResult };
   const isReact = language === "React";
+  const generation = useStorageGeneration();
+  useEffect(() => {
+    execution.current?.dispose();
+    job.current?.controller.abort();
+    job.current = null;
+    setRunning(false);
+    setPreview(null);
+    setOutput(null);
+    setChecks(null);
+    setError(null);
+    setLastRun("");
+  }, [generation]);
 
   function stop() {
+    execution.current?.dispose();
     job.current?.controller.abort();
     job.current = null;
     clearTimeout(timer.current);
@@ -146,6 +169,7 @@ export default function CodeLab({
   }
   useEffect(
     () => () => {
+      execution.current?.dispose();
       job.current?.controller.abort();
       clearTimeout(timer.current);
     },
@@ -153,68 +177,47 @@ export default function CodeLab({
   );
 
   useEffect(() => {
-    function receive(event) {
-      if (event.source !== frame.current?.contentWindow || !preview) return;
-      const data = event.data;
-      if (data?.type === "sprout-preview-ready") {
-        event.source.postMessage(
-          {
-            type: "sprout-render",
-            runId: preview.id,
-            code: preview.code,
-            checks: preview.checks,
-          },
-          "*",
-        );
-        return;
-      }
-      if (data?.runId !== preview.id) return;
-      if (data.type === "sprout-preview-log")
-        setOutput((lines) => [...(lines || []), data.line]);
-      if (data.type === "sprout-preview-error") {
-        clearTimeout(timer.current);
+    if (!preview || !frame.current || !job.current) return;
+    execution.current = createReactSession({
+      frame: frame.current,
+      runId: preview.id,
+      code: preview.source,
+      checks: preview.checks,
+      signal: job.current.controller.signal,
+      onLog: (line) =>
+        setOutput((lines) => [...(lines || []), line].slice(-150)),
+      onError: (message, name) => {
         setRunning(false);
-        setError({ message: data.message, name: data.name });
-        if (preview.checking)
-          callbacks.current.onResult?.({
-            code: preview.source,
-            passed: false,
-            checks: [],
-            error: data.message,
-          });
-      }
-      if (data.type === "sprout-preview-complete") {
-        clearTimeout(timer.current);
+        setError({ message, name });
+      },
+      onResult: (result) => {
+        if (job.current?.id !== preview.id) return;
         setRunning(false);
         if (preview.checking) {
-          setChecks(data.checks);
+          setChecks(result.checks);
           callbacks.current.onResult?.({
             code: preview.source,
             passed:
-              data.checks.length === preview.checks.length &&
-              data.checks.every((check) => check.passed),
-            checks: data.checks,
+              !result.error &&
+              result.checks.length === preview.checks.length &&
+              result.checks.every((check) => check.passed),
+            checks: result.checks,
+            error: result.error,
           });
         }
-      }
-    }
-    window.addEventListener("message", receive);
-    if (preview)
-      timer.current = setTimeout(() => {
-        setRunning(false);
-        setError({
-          message:
-            "The preview did not finish its checks. Stop it, check for a loop or repeated render, and run again.",
-        });
-      }, 20000);
+      },
+    });
     return () => {
-      window.removeEventListener("message", receive);
-      clearTimeout(timer.current);
+      execution.current?.dispose();
+      execution.current = null;
     };
   }, [preview]);
 
   async function run(checking = false) {
     if (running) return;
+    execution.current?.dispose();
+    execution.current = null;
+    job.current?.controller.abort();
     const source = code;
     const controller = new AbortController();
     const id = crypto.randomUUID();
@@ -225,31 +228,18 @@ export default function CodeLab({
     setOutput([]);
     setLastRun(source);
     saveDraft?.(draftKey, source);
+    if (checking && guidance && solution) onAssistance?.();
     const requested = checking ? task?.checks || [] : [];
     if (isReact) {
-      try {
-        const compiled = await compileReact(source);
-        if (controller.signal.aborted) return;
-        setPreview({ id, code: compiled, source, checks: requested, checking });
-      } catch (error) {
-        if (controller.signal.aborted) return;
-        setError({ message: error.message, name: error.name });
-        setRunning(false);
-        if (checking)
-          onResult?.({
-            code: source,
-            passed: false,
-            checks: [],
-            error: error.message,
-          });
-      }
+      setPreview({ id, source, checks: requested, checking });
       return;
     }
     const result = await runJavaScript(source, {
       checks: requested,
       signal: controller.signal,
     });
-    if (controller.signal.aborted || result.cancelled) return;
+    if (controller.signal.aborted || job.current?.id !== id || result.cancelled)
+      return;
     setRunning(false);
     setOutput(result.lines);
     setChecks(checking ? result.checks : null);
@@ -289,9 +279,20 @@ export default function CodeLab({
   }
 
   const stale = lastRun && codeFingerprint(lastRun) !== codeFingerprint(code);
-  const srcDoc = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><style>body{margin:0;padding:24px;background:#fafbf8;color:#294537;font:16px/1.7 system-ui,sans-serif}h1{font-size:27px;line-height:1.3}h2{font-size:23px}button{background:#2d5541;color:white;border:0;border-radius:7px;padding:10px 15px;margin:7px 8px 7px 0;font:inherit;cursor:pointer}input{display:block;padding:9px;margin:7px 0 12px;border:1px solid #879c7d;border-radius:6px;font:inherit;max-width:90%}label{font-weight:600}li{margin:8px 0}button:disabled{opacity:.5}*:focus-visible{outline:3px solid #587b32;outline-offset:3px}[role=alert]{color:#8b3529}</style></head><body><div id="app"></div><script src="${location.origin}/preview-runtime.js"></script></body></html>`;
+  const srcDoc = previewDocument(location.origin);
   return (
     <div className={`lab-wrapper ${compact ? "compact" : ""}`}>
+      <p className="sr-only" role="status">
+        {running
+          ? "Running code."
+          : error
+            ? ""
+            : preview
+              ? "React preview is ready."
+              : output !== null
+                ? "The program is no longer running. Console output is below."
+                : ""}
+      </p>
       <div className={`code-lab ${compact ? "compact" : ""}`}>
         <div className="editor-panel">
           <div className="editor-toolbar">
@@ -306,6 +307,9 @@ export default function CodeLab({
                 aria-label="Reset code"
                 disabled={running}
                 onClick={() => {
+                  execution.current?.dispose();
+                  execution.current = null;
+                  job.current?.controller.abort();
                   setCode(initialCode);
                   saveDraft?.(draftKey, initialCode);
                   setChecks(null);
@@ -316,6 +320,11 @@ export default function CodeLab({
               >
                 <RotateCcw size={15} />
               </button>
+              {isReact && preview && !running && (
+                <button className="text-button" onClick={stop}>
+                  Stop preview
+                </button>
+              )}
               {running ? (
                 <button className="run-button" onClick={stop}>
                   <Square size={12} fill="currentColor" />
@@ -340,7 +349,8 @@ export default function CodeLab({
             onRun={() => run(false)}
           />
           <div className="editor-footer">
-            <span>{isReact ? "React + JSX" : "JavaScript · worker"}</span>
+            <SaveIndicator />
+            <span>{isReact ? "React + JSX" : "JavaScript · isolated VM"}</span>
             <span>Tab moves focus · ⌘ / Ctrl + Enter runs</span>
           </div>
         </div>
@@ -356,6 +366,13 @@ export default function CodeLab({
               </button>
             )}
           </div>
+          {running && (
+            <p className="execution-loading">
+              {isReact
+                ? "Preparing your isolated React preview…"
+                : "Running your program…"}
+            </p>
+          )}
           {error && <ErrorFeedback error={error.message} name={error.name} />}
           {isReact && preview ? (
             <iframe

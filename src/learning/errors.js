@@ -3,6 +3,16 @@ export function explainError(
   name = "",
 ) {
   const details = String(message);
+  if (
+    name === "ExecutionLimit" ||
+    /interrupted|out of memory|stack overflow|maximum call stack/i.test(details)
+  )
+    return {
+      title: "The program reached a safety limit.",
+      suggestion:
+        "Check that loops can end, recursive calls can stop, and unused timers are cleared. Try a smaller input, then run again.",
+      details,
+    };
   if (/Too many re-renders|Maximum update depth/i.test(details))
     return {
       title: "An update keeps starting another render.",
@@ -17,11 +27,11 @@ export function explainError(
         "Call event.preventDefault() inside the form’s onSubmit handler, then update state. The preview prevented navigation so your current work remains available.",
       details,
     };
-  if (/document is not defined|window is not defined/.test(details))
+  if (/['"]?(document|window|self)['"]? is not defined/.test(details))
     return {
       title: "This console has no page to change.",
       suggestion:
-        "JavaScript here runs in a worker: a separate place for calculations. Use the React preview for screen interactions, or follow the local-project instructions for browser DOM code.",
+        "Code runs in an isolated interpreter without browser globals. Use React state for preview interactions, or a local project for browser DOM APIs.",
       details,
     };
   if (/not defined/.test(details))
@@ -57,7 +67,11 @@ export function explainError(
         "Check the name just before the parentheses. It may contain text, a number, or an object instead of a function.",
       details,
     };
-  if (/Cannot read properties|Cannot destructure/.test(details))
+  if (
+    /Cannot read properties|Cannot destructure|cannot read property/i.test(
+      details,
+    )
+  )
     return {
       title: "That value is missing or has a different shape.",
       suggestion:

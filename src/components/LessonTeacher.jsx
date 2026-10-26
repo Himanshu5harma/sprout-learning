@@ -1,3 +1,4 @@
+import { codeFingerprint } from "../learning/progress.js";
 import { useId, useState } from "react";
 import {
   ArrowLeft,
@@ -11,6 +12,7 @@ import {
 import CodeLab, { CodeBlock } from "./CodeLab.jsx";
 import { allLessons } from "../curriculum.js";
 import { practiceEvidence, taskIsCurrent } from "../learning/progress.js";
+import { useDraft } from "../persistence/store";
 import { predictionMatches } from "../learning/predictions.js";
 
 export function RichText({ children = "" }) {
@@ -113,7 +115,10 @@ function PracticeTask({
         drafts={progress.drafts}
         saveDraft={saveDraft}
         task={task}
-        onResult={(result) => onResult(key, task, result)}
+        onResult={(result) => {
+          if (showSolution) onAssistance(key);
+          onResult(key, task, result);
+        }}
         compact
       />
       <div className="learning-support">
@@ -171,8 +176,8 @@ function PracticeTask({
 function Prediction({ lesson, progress, onSave }) {
   const prediction = lesson.teaching.prediction;
   const saved = progress.predictions[lesson.id] || {};
-  const [answer, setAnswer] = useState(saved.answer || "");
-  const [checked, setChecked] = useState(!!saved.checked);
+  const answer = saved.answer || "";
+  const checked = !!saved.checked;
   const passed = predictionMatches(answer, prediction.expected);
   const label = useId();
   return (
@@ -195,8 +200,6 @@ function Prediction({ lesson, progress, onSave }) {
         value={answer}
         placeholder="Write the expected result here"
         onChange={(event) => {
-          setAnswer(event.target.value);
-          setChecked(false);
           onSave(lesson.id, {
             answer: event.target.value,
             checked: false,
@@ -208,7 +211,6 @@ function Prediction({ lesson, progress, onSave }) {
         className="primary-button"
         disabled={!answer.trim()}
         onClick={() => {
-          setChecked(true);
           onSave(lesson.id, { answer, checked: true, passed });
         }}
       >
@@ -277,7 +279,7 @@ function LocalProject({ project, language }) {
 
 export default function LessonTeacher({
   lesson,
-  progress,
+  progress: progressSnapshot,
   saveDraft,
   onResult,
   onAssistance,
@@ -290,16 +292,28 @@ export default function LessonTeacher({
   onBookmark,
   onComplete,
 }) {
+  const independentKey = `exercise-${lesson.id}-independent`;
+  const currentDraft = useDraft(independentKey);
+  const progress = {
+    ...progressSnapshot,
+    drafts: {
+      ...progressSnapshot.drafts,
+      [independentKey]: currentDraft ?? lesson.teaching.independent.starter,
+    },
+  };
+
   const [tab, setTab] = useState("Learn");
   const [stage, setStage] = useState(5);
   const [warmupsOpen, setWarmupsOpen] = useState(false);
   const [line, setLine] = useState(null);
   const savedQuiz =
-    progress.knowledge?.[lesson.id]?.revision === 2
+    progress.knowledge?.[lesson.id]?.revision === 2 &&
+    progress.knowledge[lesson.id]?.signature ===
+      codeFingerprint(JSON.stringify(lesson.quiz))
       ? progress.knowledge[lesson.id]
       : null;
-  const [answer, setAnswer] = useState(savedQuiz?.answer ?? null);
-  const [checked, setChecked] = useState(!!savedQuiz?.checked);
+  const answer = savedQuiz?.answer ?? null;
+  const checked = !!savedQuiz?.checked;
   const teaching = lesson.teaching;
   const verified = practiceEvidence(progress, lesson);
   const quizPassed = checked && answer === lesson.quiz.answer;
@@ -372,8 +386,8 @@ export default function LessonTeacher({
         {progress.completed.includes(lesson.id) && !verified && (
           <p className="legacy-completion">
             <CheckCircle2 size={16} />
-            Your earlier completion is preserved. The independent behaviour
-            check is new and has not been verified yet.
+            Your earlier completion is preserved. Current practical evidence
+            needs rechecking.
           </p>
         )}
         <div
@@ -702,8 +716,6 @@ export default function LessonTeacher({
                         name={`answer-${lesson.id}`}
                         checked={answer === index}
                         onChange={() => {
-                          setAnswer(index);
-                          setChecked(false);
                           onKnowledge(lesson.id, {
                             answer: index,
                             checked: false,
@@ -722,7 +734,6 @@ export default function LessonTeacher({
                   className="primary-button"
                   disabled={answer === null}
                   onClick={() => {
-                    setChecked(true);
                     onKnowledge(lesson.id, {
                       answer,
                       checked: true,

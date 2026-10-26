@@ -1,10 +1,9 @@
 import { Worker } from "node:worker_threads";
-import { buildExecutionBody, workerSource } from "../src/learning/execution.js";
+import { buildExecutionBody } from "../src/learning/execution.js";
 
 export function execute(code, checks = [], limit = 3200) {
   return new Promise((resolve) => {
-    const bridge = `const {parentPort}=require('node:worker_threads'); global.self=globalThis; self.postMessage=data=>parentPort.postMessage(data); parentPort.on('message',data=>self.onmessage({data}));`;
-    const worker = new Worker(bridge + workerSource(), { eval: true });
+    const worker = new Worker(new URL("./vm-worker.mjs", import.meta.url));
     let settled = false;
     function finish(result) {
       if (settled) return;
