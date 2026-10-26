@@ -20,6 +20,10 @@ The generated catalog contains navigation metadata and assessment signatures. Fu
 
 Tailwind's theme defines forest/ink/muted/sage/paper/line/danger colors, sans/heading/monospace families, a card radius, and shadow. Shared button variants, cards, fields, dialogs, feedback, and tabs use these tokens. Existing design CSS is placed in a `legacy` cascade layer so it cannot erase new component variants. CodeMirror and specialized responsive/teaching rules remain CSS.
 
+Typography tokens in `responsive.css` use the browser's default root size across screen widths. Page titles have a bounded fluid size; section headings, compact card titles, body text, and supporting text have explicit roles. Wide layouts gain space without increasing every font. Progress cards use the compact title and supporting-text scales.
+
+Every editable lab has an Expand control. `EditorWorkspace.tsx` keeps one native dialog in the document flow as a named region, then promotes that same element to a modal filling the viewport. CodeMirror and the preview iframe stay mounted, preserving undo history and running React state. Escape collapses the workspace first; dismissal of an inline workspace is passed to its containing lesson. Modal focus, boundary Tab navigation, and the shared scroll lock keep keyboard recovery predictable. This is an in-browser workspace, without requiring operating-system fullscreen permission.
+
 Native dialogs provide focus containment and Escape, with explicit labels and focus restoration. Tabs support arrow/Home/End keys and a single active tab stop. Mobile navigation hides closed controls from keyboard navigation and traps focus while open. Dialogs and navigation share a reference-counted page scroll lock, so closing overlapping overlays in a different order cannot leave the page stuck. Focus is visible, editor Tab exits rather than inserting indentation, execution/check feedback is announced, and reduced-motion preferences are respected. These choices support WCAG 2.2 AA; test results and manual-testing limits are documented separately.
 
 ## Important tradeoffs

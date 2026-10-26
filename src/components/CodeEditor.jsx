@@ -45,7 +45,7 @@ const theme = EditorView.theme(
       fontFamily: '"DM Mono", ui-monospace, monospace',
       padding: "18px 0",
       caretColor: "#e5efc9",
-      minHeight: "280px",
+      minHeight: "var(--code-min-height, 280px)",
     },
     ".cm-line": { padding: "0 18px 0 10px", lineHeight: "1.8" },
     ".cm-gutters": {
@@ -64,7 +64,10 @@ const theme = EditorView.theme(
     },
     ".cm-cursor": { borderLeftColor: "#eef6da" },
     "&.cm-focused": { outline: "2px solid #90b477", outlineOffset: "-2px" },
-    ".cm-scroller": { overflow: "auto", maxHeight: "550px" },
+    ".cm-scroller": {
+      overflow: "auto",
+      maxHeight: "var(--code-max-height, 550px)",
+    },
     ".cm-discussed-line": {
       backgroundColor: "#aac77a1e",
       boxShadow: "inset 3px 0 #c7dc8c",
@@ -110,7 +113,7 @@ export default function CodeEditor({
             "aria-label": label,
             "aria-multiline": "true",
             role: "textbox",
-            ...(readOnly ? { tabindex: "0" } : {}),
+            tabindex: "0",
           }),
           lineHighlight.current.of([]),
           ...(!readOnly

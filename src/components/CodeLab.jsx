@@ -8,6 +8,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import CodeEditor from "./CodeEditor.jsx";
+import { EditorWorkspace, WorkspaceToggle } from "./EditorWorkspace";
 import { runJavaScript } from "../runner.js";
 import {
   createReactSession,
@@ -281,7 +282,10 @@ export default function CodeLab({
   const stale = lastRun && codeFingerprint(lastRun) !== codeFingerprint(code);
   const srcDoc = previewDocument(location.origin);
   return (
-    <div className={`lab-wrapper ${compact ? "compact" : ""}`}>
+    <EditorWorkspace
+      className={`lab-wrapper ${compact ? "compact" : ""}`}
+      label={`${language} practice workspace`}
+    >
       <p className="sr-only" role="status">
         {running
           ? "Running code."
@@ -301,6 +305,7 @@ export default function CodeLab({
               Code · {isReact ? "App.jsx" : "playground.js"}
             </span>
             <div>
+              <WorkspaceToggle />
               <button
                 className="icon-button"
                 title="Reset code to the current starter"
@@ -523,6 +528,6 @@ export default function CodeLab({
           )}
         </div>
       )}
-    </div>
+    </EditorWorkspace>
   );
 }

@@ -21,7 +21,7 @@ npm run test:browser      # production browser harness, journeys, accessibility,
 
 For an intentional visual change, inspect the rendered screens before running `npx playwright test tests/browser/visual.spec.ts --update-snapshots`. Commit reviewed baselines, never failure artifacts. Browser tests use isolated profiles and their own local preview server on port 4173; they never clear your normal browser's learning data.
 
-The PNGs in `tests/browser/__screenshots__/` are reviewed references used by visual tests. The wide progress screen has separate macOS and Linux references because full-page text wrapping differs; the other three screens share references. Actual screenshots, traces, and HTML reports stay in ignored `output/`; generated assets, build output, and dependencies are also excluded from Git.
+The PNGs in `tests/browser/__screenshots__/` are reviewed references used by visual tests. Wide progress uses its fixed 1920 × 1080 viewport so platform text wrapping cannot change the image dimensions; the other references capture full pages. Responsive and data-control journeys also check content below the fold. Actual screenshots, traces, and HTML reports stay in ignored `output/`; generated assets, build output, and dependencies are also excluded from Git.
 
 `npm run format` formats authored files. `npm run format:check` only checks. Generated artifacts and the original compact design stylesheet are excluded from formatting.
 
